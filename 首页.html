@@ -29,17 +29,91 @@
             color: var(--notion-primary);
             background-color: #f5f5f5;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             line-height: 1.5;
+        }
+        
+        .header {
+            background-color: var(--notion-primary);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            background-color: rgba(255, 255, 255, 0.1);
         }
         
         .container {
             max-width: 1400px;
-            margin: 0 auto;
+            margin: 20px auto;
             background: var(--notion-background);
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             padding: 20px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .welcome-page {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .welcome-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .welcome-options {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .welcome-card {
+            background: white;
+            border-radius: 8px;
+            padding: 25px;
+            width: 250px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .welcome-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-card i {
+            font-size: 36px;
+            margin-bottom: 15px;
+            color: var(--notion-blue);
         }
         
         h1, h2, h3 {
@@ -244,99 +318,218 @@
             padding: 30px;
             color: var(--notion-secondary);
         }
+        
+        .back-btn {
+            margin-bottom: 20px;
+            background: none;
+            border: none;
+            color: var(--notion-blue);
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .date-filters {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .date-filter-group {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
+    <div class="header">
+        <div class="nav">
+            <button class="nav-btn active" onclick="showPage('home')">首页</button>
+            <button class="nav-btn" onclick="showPage('inventory')">库存主表</button>
+            <button class="nav-btn" onclick="showPage('records')">流水记录</button>
+        </div>
+    </div>
+
     <div class="container">
-        <h1>仓库库存管理系统</h1>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <span class="filter-label">一级分类</span>
-                <select id="category-filter">
-                    <option value="">所有分类</option>
-                    <option value="包装">包装</option>
+        <!-- 主页 -->
+        <div id="home-page" class="page active">
+            <div class="welcome-page">
+                <div class="welcome-content">
+                    <h1>仓库库存管理系统</h1>
+                    <p>请在库存主表中查询你想要的仓库数据，并在物品表格中进行入库与出库的编辑</p>
+                    
+                    <div class="welcome-options">
+                        <div class="welcome-card" onclick="showPage('inventory')">
+                            <i class="fas fa-boxes"></i>
+                            <h3>库存主表</h3>
+                            <p>查看所有物品的当前库存状态，包括库存数量和补货提醒</p>
+                        </div>
+                        
+                        <div class="welcome-card" onclick="showPage('records')">
+                            <i class="fas fa-list-alt"></i>
+                            <h3>流水记录</h3>
+                            <p>查看所有库存变动记录，支持按年月筛选</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 库存主表页面 -->
+        <div id="inventory-page" class="page">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-left"></i> 返回首页
+            </button>
+            
+            <h2>库存主表</h2>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <span class="filter-label">一级分类</span>
+                    <select id="category-filter">
+                        <option value="包装">包装</option>
                         <option value="产品相关">产品相关</option>
                         <option value="工作坊用具">工作坊用具工具</option>
                         <option value="器械工具">器械工具</option>
                         <option value="行政用品">行政用品</option>
-                </select>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">二级分类</span>
+                    <select id="subcategory-filter">
+                        <option value="">所有子分类</option>
+                        <!-- 动态填充 -->
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">库存状态</span>
+                    <select id="status-filter">
+                        <option value="">所有状态</option>
+                        <option value="need">需要补货</option>
+                        <option value="ok">库存充足</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">搜索物品</span>
+                    <input type="text" id="search-box" class="search-box" placeholder="输入物品名称...">
+                </div>
             </div>
             
-            <div class="filter-group">
-                <span class="filter-label">二级分类</span>
-                <select id="subcategory-filter">
-                    <option value="">所有子分类</option>
-                    <!-- 动态填充 -->
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <span class="filter-label">库存状态</span>
-                <select id="status-filter">
-                    <option value="">所有状态</option>
-                    <option value="need">需要补货</option>
-                    <option value="ok">库存充足</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <span class="filter-label">搜索物品</span>
-                <input type="text" id="search-box" class="search-box" placeholder="输入物品名称...">
+            <div class="database">
+                <div class="database-header">
+                    <h3>物品列表</h3>
+                    <button class="btn" onclick="openAddItemModal()">
+                        <i class="fas fa-plus"></i> 添加物品
+                    </button>
+                </div>
+                
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>物品名称</th>
+                            <th>分类</th>
+                            <th>当前库存</th>
+                            <th>最低库存</th>
+                            <th>存放位置</th>
+                            <th>负责人</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 数据将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
             </div>
         </div>
-        
-        <div class="database">
-            <div class="database-header">
-                <h2>库存主表</h2>
-                <button class="btn" onclick="openAddItemModal()">
-                    <i class="fas fa-plus"></i> 添加物品
-                </button>
+
+        <!-- 流水记录页面 -->
+        <div id="records-page" class="page">
+            <button class="back-btn" onclick="showPage('home')">
+                <i class="fas fa-arrow-left"></i> 返回首页
+            </button>
+            
+            <h2>库存流水记录</h2>
+            
+            <div class="filters">
+                <div class="date-filters">
+                    <div class="date-filter-group">
+                        <span class="filter-label">年份</span>
+                        <select id="year-filter">
+                            <option value="">所有年份</option>
+                            <!-- 动态填充 -->
+                        </select>
+                    </div>
+                    
+                    <div class="date-filter-group">
+                        <span class="filter-label">月份</span>
+                        <select id="month-filter">
+                            <option value="">所有月份</option>
+                            <option value="01">一月</option>
+                            <option value="02">二月</option>
+                            <option value="03">三月</option>
+                            <option value="04">四月</option>
+                            <option value="05">五月</option>
+                            <option value="06">六月</option>
+                            <option value="07">七月</option>
+                            <option value="08">八月</option>
+                            <option value="09">九月</option>
+                            <option value="10">十月</option>
+                            <option value="11">十一月</option>
+                            <option value="12">十二月</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">物品筛选</span>
+                    <select id="record-item-filter">
+                        <option value="">所有物品</option>
+                        <!-- 动态填充 -->
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <span class="filter-label">操作类型</span>
+                    <select id="record-type-filter">
+                        <option value="">所有类型</option>
+                        <option value="in">入库</option>
+                        <option value="out">出库</option>
+                    </select>
+                </div>
             </div>
             
-            <table id="inventory-table">
-                <thead>
-                    <tr>
-                        <th>物品名称</th>
-                        <th>分类</th>
-                        <th>当前库存</th>
-                        <th>最低库存</th>
-                        <th>存放位置</th>
-                        <th>负责人</th>
-                        <th>状态</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 数据将通过JavaScript动态生成 -->
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="database">
-            <div class="database-header">
-                <h2>库存流水记录</h2>
-                <button class="btn" onclick="openRecordModal()">
-                    <i class="fas fa-plus"></i> 添加记录
-                </button>
+            <div class="database">
+                <div class="database-header">
+                    <h3>记录列表</h3>
+                    <button class="btn" onclick="openRecordModal()">
+                        <i class="fas fa-plus"></i> 添加记录
+                    </button>
+                </div>
+                
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>物品</th>
+                            <th>类型</th>
+                            <th>数量</th>
+                            <th>负责人</th>
+                            <th>备注</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 数据将通过JavaScript动态生成 -->
+                    </tbody>
+                </table>
             </div>
-            
-            <table id="records-table">
-                <thead>
-                    <tr>
-                        <th>日期</th>
-                        <th>物品</th>
-                        <th>类型</th>
-                        <th>数量</th>
-                        <th>负责人</th>
-                        <th>备注</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- 数据将通过JavaScript动态生成 -->
-                </tbody>
-            </table>
         </div>
     </div>
     
@@ -362,6 +555,7 @@
                         <option value="工作坊用具">工作坊用具工具</option>
                         <option value="器械工具">器械工具</option>
                         <option value="行政用品">行政用品</option>
+                        <option value="其他">其他</option>
                     </select>
                 </div>
                 
@@ -469,6 +663,7 @@
                         <option value="工作坊用具">工作坊用具工具</option>
                         <option value="器械工具">器械工具</option>
                         <option value="行政用品">行政用品</option>
+                        <option value="其他">其他</option>
                     </select>
                 </div>
                 
@@ -519,7 +714,10 @@
             { id: 3, date: "2023-05-17", itemId: 2, type: "in", quantity: 20, responsible: "王五", notes: "采购入库" },
             { id: 4, date: "2023-05-18", itemId: 2, type: "out", quantity: 12, responsible: "赵六", notes: "销售出库" },
             { id: 5, date: "2023-05-19", itemId: 3, type: "in", quantity: 5, responsible: "钱七", notes: "新购设备" },
-            { id: 6, date: "2023-05-20", itemId: 4, type: "out", quantity: 3, responsible: "孙八", notes: "生产领用" }
+            { id: 6, date: "2023-05-20", itemId: 4, type: "out", quantity: 3, responsible: "孙八", notes: "生产领用" },
+            { id: 7, date: "2023-06-10", itemId: 5, type: "in", quantity: 100, responsible: "张三", notes: "批量采购" },
+            { id: 8, date: "2023-06-12", itemId: 5, type: "out", quantity: 50, responsible: "李四", notes: "部门领取" },
+            { id: 9, date: "2023-06-15", itemId: 6, type: "in", quantity: 30, responsible: "王五", notes: "供应商送货" }
         ];
         
         // 二级分类映射
@@ -534,6 +732,7 @@
             renderInventoryTable();
             renderRecordsTable();
             populateItemDropdown();
+            populateRecordFilters();
             setupEventListeners();
         }
         
@@ -544,11 +743,50 @@
             document.getElementById('subcategory-filter').addEventListener('change', applyFilters);
             document.getElementById('status-filter').addEventListener('change', applyFilters);
             document.getElementById('search-box').addEventListener('input', applyFilters);
+            
+            // 记录筛选器事件
+            document.getElementById('year-filter').addEventListener('change', applyRecordFilters);
+            document.getElementById('month-filter').addEventListener('change', applyRecordFilters);
+            document.getElementById('record-item-filter').addEventListener('change', applyRecordFilters);
+            document.getElementById('record-type-filter').addEventListener('change', applyRecordFilters);
+        }
+        
+        // 显示指定页面
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示指定页面
+            document.getElementById(`${pageId}-page`).classList.add('active');
+            
+            // 更新导航按钮状态
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.nav-btn[onclick="showPage('${pageId}')"]`).classList.add('active');
+            
+            // 如果切换到记录页面，刷新记录筛选器
+            if (pageId === 'records') {
+                populateRecordFilters();
+                applyRecordFilters();
+            }
+            
+            // 如果切换到库存页面，刷新库存筛选器
+            if (pageId === 'inventory') {
+                applyFilters();
+            }
         }
         
         // 应用筛选
         function applyFilters() {
             renderInventoryTable();
+        }
+        
+        // 应用记录筛选
+        function applyRecordFilters() {
+            renderRecordsTable();
         }
         
         // 获取筛选后的库存数据
@@ -574,6 +812,30 @@
                 
                 // 搜索筛选
                 if (searchText && !item.name.toLowerCase().includes(searchText)) return false;
+                
+                return true;
+            });
+        }
+        
+        // 获取筛选后的记录数据
+        function getFilteredRecords() {
+            const yearFilter = document.getElementById('year-filter').value;
+            const monthFilter = document.getElementById('month-filter').value;
+            const itemFilter = document.getElementById('record-item-filter').value;
+            const typeFilter = document.getElementById('record-type-filter').value;
+            
+            return records.filter(record => {
+                // 年份筛选
+                if (yearFilter && !record.date.startsWith(yearFilter)) return false;
+                
+                // 月份筛选
+                if (monthFilter && record.date.substring(5, 7) !== monthFilter) return false;
+                
+                // 物品筛选
+                if (itemFilter && record.itemId !== parseInt(itemFilter)) return false;
+                
+                // 类型筛选
+                if (typeFilter && record.type !== typeFilter) return false;
                 
                 return true;
             });
@@ -661,20 +923,47 @@
             }
         }
         
+        // 填充记录筛选器
+        function populateRecordFilters() {
+            // 填充年份筛选器
+            const yearFilter = document.getElementById('year-filter');
+            const years = [...new Set(records.map(record => record.date.substring(0, 4)))].sort();
+            
+            yearFilter.innerHTML = '<option value="">所有年份</option>';
+            years.forEach(year => {
+                const option = document.createElement("option");
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            });
+            
+            // 填充物品筛选器
+            const itemFilter = document.getElementById('record-item-filter');
+            itemFilter.innerHTML = '<option value="">所有物品</option>';
+            inventory.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.name;
+                itemFilter.appendChild(option);
+            });
+        }
+        
         // 渲染记录表格
         function renderRecordsTable() {
             const tbody = document.querySelector("#records-table tbody");
             tbody.innerHTML = "";
             
-            if (records.length === 0) {
+            const filteredRecords = getFilteredRecords();
+            
+            if (filteredRecords.length === 0) {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td colspan="7" class="empty-state">没有流水记录</td>`;
+                row.innerHTML = `<td colspan="7" class="empty-state">没有找到匹配的记录</td>`;
                 tbody.appendChild(row);
                 return;
             }
             
             // 按日期降序排列记录
-            const sortedRecords = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const sortedRecords = [...filteredRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
             
             sortedRecords.forEach(record => {
                 const item = inventory.find(i => i.id === record.itemId);
@@ -787,6 +1076,7 @@
             inventory.push(newItem);
             renderInventoryTable();
             populateItemDropdown();
+            populateRecordFilters();
             
             // 添加初始记录
             const today = new Date().toISOString().split('T')[0];
@@ -842,6 +1132,7 @@
             
             renderInventoryTable();
             renderRecordsTable();
+            populateRecordFilters();
             closeModal("record-modal");
             this.reset();
         });
@@ -908,6 +1199,7 @@
             renderInventoryTable();
             renderRecordsTable();
             populateItemDropdown();
+            populateRecordFilters();
         }
         
         // 删除记录
@@ -937,6 +1229,7 @@
             
             renderInventoryTable();
             renderRecordsTable();
+            populateRecordFilters();
         }
         
         // 快速操作（入库/出库）
@@ -971,6 +1264,7 @@
                 
                 renderInventoryTable();
                 renderRecordsTable();
+                populateRecordFilters();
             }
         }
         
