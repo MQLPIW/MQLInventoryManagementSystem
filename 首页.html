@@ -1,0 +1,981 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仓库库存管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --notion-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            --notion-primary: #37352f;
+            --notion-secondary: #787774;
+            --notion-background: #fff;
+            --notion-red: #e03e3e;
+            --notion-green: #0b6e3d;
+            --notion-blue: #0b6e99;
+            --notion-gray: #9b9a97;
+            --notion-border: #ddd;
+            --notion-orange: #d9730d;
+            --notion-purple: #6940a5;
+            --notion-pink: #ad1a72;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--notion-font);
+            color: var(--notion-primary);
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--notion-background);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        h1, h2, h3 {
+            color: var(--notion-primary);
+            margin-top: 0;
+        }
+        
+        .database {
+            margin-bottom: 30px;
+        }
+        
+        .database-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--notion-border);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--notion-border);
+        }
+        
+        th {
+            font-weight: 500;
+            color: var(--notion-secondary);
+            font-size: 14px;
+            position: sticky;
+            top: 0;
+            background-color: var(--notion-background);
+        }
+        
+        .status-need {
+            color: var(--notion-red);
+            font-weight: 500;
+        }
+        
+        .status-ok {
+            color: var(--notion-green);
+        }
+        
+        .btn {
+            background-color: var(--notion-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn:hover {
+            background-color: #2b2924;
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        
+        .btn-danger {
+            background-color: var(--notion-red);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c13535;
+        }
+        
+        .btn-success {
+            background-color: var(--notion-green);
+        }
+        
+        .btn-success:hover {
+            background-color: #09592f;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 4px;
+            font-family: var(--notion-font);
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .close {
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--notion-secondary);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 14px;
+            color: var(--notion-secondary);
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .category-packaging {
+            background-color: rgba(105, 64, 165, 0.1);
+            color: var(--notion-purple);
+        }
+        
+        .category-tools {
+            background-color: rgba(217, 115, 13, 0.1);
+            color: var(--notion-orange);
+        }
+        
+        .category-supplies {
+            background-color: rgba(11, 110, 153, 0.1);
+            color: var(--notion-blue);
+        }
+        
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .search-box {
+            padding: 8px 12px;
+            border: 1px solid var(--notion-border);
+            border-radius: 4px;
+            width: 250px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            color: var(--notion-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>仓库库存管理系统</h1>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <span class="filter-label">一级分类</span>
+                <select id="category-filter">
+                    <option value="">所有分类</option>
+                    <option value="包装">包装</option>
+                        <option value="产品相关">产品相关</option>
+                        <option value="工作坊用具">工作坊用具工具</option>
+                        <option value="器械工具">器械工具</option>
+                        <option value="行政用品">行政用品</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">二级分类</span>
+                <select id="subcategory-filter">
+                    <option value="">所有子分类</option>
+                    <!-- 动态填充 -->
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">库存状态</span>
+                <select id="status-filter">
+                    <option value="">所有状态</option>
+                    <option value="need">需要补货</option>
+                    <option value="ok">库存充足</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <span class="filter-label">搜索物品</span>
+                <input type="text" id="search-box" class="search-box" placeholder="输入物品名称...">
+            </div>
+        </div>
+        
+        <div class="database">
+            <div class="database-header">
+                <h2>库存主表</h2>
+                <button class="btn" onclick="openAddItemModal()">
+                    <i class="fas fa-plus"></i> 添加物品
+                </button>
+            </div>
+            
+            <table id="inventory-table">
+                <thead>
+                    <tr>
+                        <th>物品名称</th>
+                        <th>分类</th>
+                        <th>当前库存</th>
+                        <th>最低库存</th>
+                        <th>存放位置</th>
+                        <th>负责人</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="database">
+            <div class="database-header">
+                <h2>库存流水记录</h2>
+                <button class="btn" onclick="openRecordModal()">
+                    <i class="fas fa-plus"></i> 添加记录
+                </button>
+            </div>
+            
+            <table id="records-table">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>物品</th>
+                        <th>类型</th>
+                        <th>数量</th>
+                        <th>负责人</th>
+                        <th>备注</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 数据将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- 添加物品模态框 -->
+    <div id="add-item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加新物品</h3>
+                <span class="close" onclick="closeModal('add-item-modal')">&times;</span>
+            </div>
+            <form id="add-item-form">
+                <div class="form-group">
+                    <label for="item-name">物品名称 *</label>
+                    <input type="text" id="item-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category-1">一级分类 *</label>
+                    <select id="category-1" required onchange="updateSubcategories()">
+                        <option value="">请选择分类</option>
+                        <option value="包装">包装</option>
+                        <option value="产品相关">产品相关</option>
+                        <option value="工作坊用具">工作坊用具工具</option>
+                        <option value="器械工具">器械工具</option>
+                        <option value="行政用品">行政用品</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="category-2">二级分类</label>
+                    <select id="category-2">
+                        <option value="">无二级分类</option>
+                        <!-- 动态填充 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="initial-stock">初始库存 *</label>
+                    <input type="number" id="initial-stock" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="min-stock">最低库存 *</label>
+                    <input type="number" id="min-stock" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">存放位置</label>
+                    <input type="text" id="location">
+                </div>
+                
+                <div class="form-group">
+                    <label for="responsible">负责人</label>
+                    <input type="text" id="responsible">
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> 添加物品
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 添加记录模态框 -->
+    <div id="record-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加库存记录</h3>
+                <span class="close" onclick="closeModal('record-modal')">&times;</span>
+            </div>
+            <form id="record-form">
+                <div class="form-group">
+                    <label for="record-item">物品 *</label>
+                    <select id="record-item" required>
+                        <!-- 选项将通过JavaScript动态生成 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="record-type">类型 *</label>
+                    <select id="record-type" required>
+                        <option value="in">入库</option>
+                        <option value="out">出库</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="record-quantity">数量 *</label>
+                    <input type="number" id="record-quantity" min="1" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="record-responsible">负责人</label>
+                    <input type="text" id="record-responsible">
+                </div>
+                
+                <div class="form-group">
+                    <label for="record-notes">备注</label>
+                    <textarea id="record-notes"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> 添加记录
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 编辑物品模态框 -->
+    <div id="edit-item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑物品信息</h3>
+                <span class="close" onclick="closeModal('edit-item-modal')">&times;</span>
+            </div>
+            <form id="edit-item-form">
+                <input type="hidden" id="edit-item-id">
+                
+                <div class="form-group">
+                    <label for="edit-item-name">物品名称 *</label>
+                    <input type="text" id="edit-item-name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category-1">一级分类 *</label>
+                    <select id="edit-category-1" required onchange="updateEditSubcategories()">
+                        <option value="">请选择分类</option>
+                        <option value="包装">包装</option>
+                        <option value="产品相关">产品相关</option>
+                        <option value="工作坊用具">工作坊用具工具</option>
+                        <option value="器械工具">器械工具</option>
+                        <option value="行政用品">行政用品</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-category-2">二级分类</label>
+                    <select id="edit-category-2">
+                        <option value="">无二级分类</option>
+                        <!-- 动态填充 -->
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-min-stock">最低库存 *</label>
+                    <input type="number" id="edit-min-stock" min="0" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-location">存放位置</label>
+                    <input type="text" id="edit-location">
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-responsible">负责人</label>
+                    <input type="text" id="edit-responsible">
+                </div>
+                
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> 保存更改
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 示例数据
+        let inventory = [
+            { id: 1, name: "咖啡包装袋", category1: "包装", category2: "咖啡包装", current: 15, min: 10, location: "A区-货架3", responsible: "张三" },
+            { id: 2, name: "花茶包装盒", category1: "包装", category2: "花茶包装", current: 8, min: 15, location: "A区-货架2", responsible: "李四" },
+            { id: 3, name: "工业电钻", category1: "器械工具", category2: "大型电器", current: 3, min: 5, location: "B区-工具柜", responsible: "王五" },
+            { id: 4, name: "螺丝刀套装", category1: "器械工具", category2: "小工具", current: 10, min: 8, location: "B区-工具箱", responsible: "赵六" },
+            { id: 5, name: "中性笔", category1: "行政用品", category2: "笔", current: 50, min: 30, location: "C区-文具柜", responsible: "钱七" },
+            { id: 6, name: "透明胶带", category1: "行政用品", category2: "胶带纸", current: 12, min: 15, location: "C区-耗材架", responsible: "孙八" }
+        ];
+        
+        let records = [
+            { id: 1, date: "2023-05-15", itemId: 1, type: "in", quantity: 10, responsible: "张三", notes: "采购入库" },
+            { id: 2, date: "2023-05-16", itemId: 1, type: "out", quantity: 5, responsible: "李四", notes: "销售出库" },
+            { id: 3, date: "2023-05-17", itemId: 2, type: "in", quantity: 20, responsible: "王五", notes: "采购入库" },
+            { id: 4, date: "2023-05-18", itemId: 2, type: "out", quantity: 12, responsible: "赵六", notes: "销售出库" },
+            { id: 5, date: "2023-05-19", itemId: 3, type: "in", quantity: 5, responsible: "钱七", notes: "新购设备" },
+            { id: 6, date: "2023-05-20", itemId: 4, type: "out", quantity: 3, responsible: "孙八", notes: "生产领用" }
+        ];
+        
+        // 二级分类映射
+        const subcategories = {
+            "包装": ["咖啡包装", "花茶包装", "其他包装"],
+            "器械工具": ["大型电器", "小工具", "测量仪器"],
+            "行政用品": ["笔", "胶带纸", "文件夹", "纸张"]
+        };
+        
+        // 初始化页面
+        function initPage() {
+            renderInventoryTable();
+            renderRecordsTable();
+            populateItemDropdown();
+            setupEventListeners();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 筛选器事件
+            document.getElementById('category-filter').addEventListener('change', applyFilters);
+            document.getElementById('subcategory-filter').addEventListener('change', applyFilters);
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('search-box').addEventListener('input', applyFilters);
+        }
+        
+        // 应用筛选
+        function applyFilters() {
+            renderInventoryTable();
+        }
+        
+        // 获取筛选后的库存数据
+        function getFilteredInventory() {
+            const categoryFilter = document.getElementById('category-filter').value;
+            const subcategoryFilter = document.getElementById('subcategory-filter').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            const searchText = document.getElementById('search-box').value.toLowerCase();
+            
+            return inventory.filter(item => {
+                // 分类筛选
+                if (categoryFilter && item.category1 !== categoryFilter) return false;
+                
+                // 子分类筛选
+                if (subcategoryFilter && item.category2 !== subcategoryFilter) return false;
+                
+                // 状态筛选
+                if (statusFilter) {
+                    const needsRestock = item.current <= item.min;
+                    if (statusFilter === 'need' && !needsRestock) return false;
+                    if (statusFilter === 'ok' && needsRestock) return false;
+                }
+                
+                // 搜索筛选
+                if (searchText && !item.name.toLowerCase().includes(searchText)) return false;
+                
+                return true;
+            });
+        }
+        
+        // 渲染库存表格
+        function renderInventoryTable() {
+            const tbody = document.querySelector("#inventory-table tbody");
+            tbody.innerHTML = "";
+            
+            const filteredInventory = getFilteredInventory();
+            
+            if (filteredInventory.length === 0) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td colspan="8" class="empty-state">没有找到匹配的物品</td>`;
+                tbody.appendChild(row);
+                return;
+            }
+            
+            filteredInventory.forEach(item => {
+                const status = item.current <= item.min ? 
+                    `<span class="status-need">需要补货</span>` : 
+                    `<span class="status-ok">库存充足</span>`;
+                
+                const categoryClass = `category-${getCategoryClass(item.category1)}`;
+                
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>
+                        <div class="category-badge ${categoryClass}">${item.category1}</div>
+                        ${item.category2 ? `<div style="margin-top:5px;font-size:12px;">${item.category2}</div>` : ''}
+                    </td>
+                    <td>${item.current}</td>
+                    <td>${item.min}</td>
+                    <td>${item.location || '-'}</td>
+                    <td>${item.responsible || '-'}</td>
+                    <td>${status}</td>
+                    <td class="actions-cell">
+                        <button class="btn btn-sm" onclick="quickAction(${item.id}, 'in')" title="快速入库">
+                            <i class="fas fa-arrow-down"></i>
+                        </button>
+                        <button class="btn btn-sm" onclick="quickAction(${item.id}, 'out')" title="快速出库">
+                            <i class="fas fa-arrow-up"></i>
+                        </button>
+                        <button class="btn btn-sm" onclick="editItem(${item.id})" title="编辑">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteItem(${item.id})" title="删除">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // 更新子分类筛选器
+            updateSubcategoryFilter();
+        }
+        
+        // 获取分类CSS类名
+        function getCategoryClass(category) {
+            switch(category) {
+                case "包装": return "packaging";
+                case "器械工具": return "tools";
+                case "行政用品": return "supplies";
+                default: return "";
+            }
+        }
+        
+        // 更新子分类筛选器
+        function updateSubcategoryFilter() {
+            const categoryFilter = document.getElementById('category-filter').value;
+            const subcategoryFilter = document.getElementById('subcategory-filter');
+            
+            subcategoryFilter.innerHTML = '<option value="">所有子分类</option>';
+            
+            if (categoryFilter && subcategories[categoryFilter]) {
+                subcategories[categoryFilter].forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.textContent = sub;
+                    subcategoryFilter.appendChild(option);
+                });
+            }
+        }
+        
+        // 渲染记录表格
+        function renderRecordsTable() {
+            const tbody = document.querySelector("#records-table tbody");
+            tbody.innerHTML = "";
+            
+            if (records.length === 0) {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td colspan="7" class="empty-state">没有流水记录</td>`;
+                tbody.appendChild(row);
+                return;
+            }
+            
+            // 按日期降序排列记录
+            const sortedRecords = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedRecords.forEach(record => {
+                const item = inventory.find(i => i.id === record.itemId);
+                const typeText = record.type === "in" ? "入库" : "出库";
+                const typeClass = record.type === "in" ? "status-ok" : "status-need";
+                
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${item ? item.name : "未知物品"}</td>
+                    <td class="${typeClass}">${typeText}</td>
+                    <td>${record.quantity}</td>
+                    <td>${record.responsible || '-'}</td>
+                    <td>${record.notes || "-"}</td>
+                    <td class="actions-cell">
+                        <button class="btn btn-sm btn-danger" onclick="deleteRecord(${record.id})" title="删除记录">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // 填充物品下拉框
+        function populateItemDropdown() {
+            const dropdown = document.getElementById("record-item");
+            dropdown.innerHTML = "";
+            
+            inventory.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item.id;
+                option.textContent = item.name;
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // 更新子分类下拉框（添加物品时）
+        function updateSubcategories() {
+            const category1 = document.getElementById("category-1").value;
+            const category2Select = document.getElementById("category-2");
+            
+            category2Select.innerHTML = '<option value="">无二级分类</option>';
+            
+            if (category1 && subcategories[category1]) {
+                subcategories[category1].forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.textContent = sub;
+                    category2Select.appendChild(option);
+                });
+            }
+        }
+        
+        // 更新子分类下拉框（编辑物品时）
+        function updateEditSubcategories() {
+            const category1 = document.getElementById("edit-category-1").value;
+            const category2Select = document.getElementById("edit-category-2");
+            
+            category2Select.innerHTML = '<option value="">无二级分类</option>';
+            
+            if (category1 && subcategories[category1]) {
+                subcategories[category1].forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.textContent = sub;
+                    category2Select.appendChild(option);
+                });
+            }
+        }
+        
+        // 打开添加物品模态框
+        function openAddItemModal() {
+            document.getElementById("add-item-modal").style.display = "flex";
+        }
+        
+        // 打开记录模态框
+        function openRecordModal() {
+            document.getElementById("record-modal").style.display = "flex";
+        }
+        
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = "none";
+        }
+        
+        // 添加新物品
+        document.getElementById("add-item-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById("item-name").value;
+            const category1 = document.getElementById("category-1").value;
+            const category2 = document.getElementById("category-2").value;
+            const current = parseInt(document.getElementById("initial-stock").value);
+            const min = parseInt(document.getElementById("min-stock").value);
+            const location = document.getElementById("location").value;
+            const responsible = document.getElementById("responsible").value;
+            
+            const newItem = {
+                id: inventory.length > 0 ? Math.max(...inventory.map(i => i.id)) + 1 : 1,
+                name,
+                category1,
+                category2,
+                current,
+                min,
+                location,
+                responsible
+            };
+            
+            inventory.push(newItem);
+            renderInventoryTable();
+            populateItemDropdown();
+            
+            // 添加初始记录
+            const today = new Date().toISOString().split('T')[0];
+            records.push({
+                id: records.length > 0 ? Math.max(...records.map(r => r.id)) + 1 : 1,
+                date: today,
+                itemId: newItem.id,
+                type: "in",
+                quantity: current,
+                responsible: responsible,
+                notes: "初始库存"
+            });
+            
+            renderRecordsTable();
+            closeModal("add-item-modal");
+            this.reset();
+        });
+        
+        // 添加记录
+        document.getElementById("record-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const itemId = parseInt(document.getElementById("record-item").value);
+            const type = document.getElementById("record-type").value;
+            const quantity = parseInt(document.getElementById("record-quantity").value);
+            const responsible = document.getElementById("record-responsible").value;
+            const notes = document.getElementById("record-notes").value;
+            
+            // 更新库存
+            const itemIndex = inventory.findIndex(i => i.id === itemId);
+            if (itemIndex !== -1) {
+                if (type === "in") {
+                    inventory[itemIndex].current += quantity;
+                } else {
+                    inventory[itemIndex].current -= quantity;
+                    if (inventory[itemIndex].current < 0) {
+                        inventory[itemIndex].current = 0;
+                    }
+                }
+            }
+            
+            // 添加记录
+            const today = new Date().toISOString().split('T')[0];
+            records.push({
+                id: records.length > 0 ? Math.max(...records.map(r => r.id)) + 1 : 1,
+                date: today,
+                itemId,
+                type,
+                quantity,
+                responsible,
+                notes
+            });
+            
+            renderInventoryTable();
+            renderRecordsTable();
+            closeModal("record-modal");
+            this.reset();
+        });
+        
+        // 编辑物品
+        function editItem(itemId) {
+            const item = inventory.find(i => i.id === itemId);
+            if (!item) return;
+            
+            document.getElementById("edit-item-id").value = item.id;
+            document.getElementById("edit-item-name").value = item.name;
+            document.getElementById("edit-category-1").value = item.category1;
+            document.getElementById("edit-min-stock").value = item.min;
+            document.getElementById("edit-location").value = item.location || '';
+            document.getElementById("edit-responsible").value = item.responsible || '';
+            
+            // 更新子分类选项
+            updateEditSubcategories();
+            
+            // 设置当前二级分类
+            setTimeout(() => {
+                document.getElementById("edit-category-2").value = item.category2 || '';
+            }, 100);
+            
+            document.getElementById("edit-item-modal").style.display = "flex";
+        }
+        
+        // 保存编辑的物品
+        document.getElementById("edit-item-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const itemId = parseInt(document.getElementById("edit-item-id").value);
+            const name = document.getElementById("edit-item-name").value;
+            const category1 = document.getElementById("edit-category-1").value;
+            const category2 = document.getElementById("edit-category-2").value;
+            const min = parseInt(document.getElementById("edit-min-stock").value);
+            const location = document.getElementById("edit-location").value;
+            const responsible = document.getElementById("edit-responsible").value;
+            
+            const itemIndex = inventory.findIndex(i => i.id === itemId);
+            if (itemIndex !== -1) {
+                inventory[itemIndex].name = name;
+                inventory[itemIndex].category1 = category1;
+                inventory[itemIndex].category2 = category2;
+                inventory[itemIndex].min = min;
+                inventory[itemIndex].location = location;
+                inventory[itemIndex].responsible = responsible;
+            }
+            
+            renderInventoryTable();
+            closeModal("edit-item-modal");
+        });
+        
+        // 删除物品
+        function deleteItem(itemId) {
+            if (!confirm("确定要删除这个物品吗？相关的所有记录也将被删除。")) return;
+            
+            // 删除物品
+            inventory = inventory.filter(item => item.id !== itemId);
+            
+            // 删除相关记录
+            records = records.filter(record => record.itemId !== itemId);
+            
+            renderInventoryTable();
+            renderRecordsTable();
+            populateItemDropdown();
+        }
+        
+        // 删除记录
+        function deleteRecord(recordId) {
+            if (!confirm("确定要删除这条记录吗？删除后库存数量将会相应调整。")) return;
+            
+            const recordIndex = records.findIndex(r => r.id === recordId);
+            if (recordIndex === -1) return;
+            
+            const record = records[recordIndex];
+            const itemIndex = inventory.findIndex(i => i.id === record.itemId);
+            
+            if (itemIndex !== -1) {
+                // 根据记录类型反向调整库存
+                if (record.type === "in") {
+                    inventory[itemIndex].current -= record.quantity;
+                    if (inventory[itemIndex].current < 0) {
+                        inventory[itemIndex].current = 0;
+                    }
+                } else {
+                    inventory[itemIndex].current += record.quantity;
+                }
+            }
+            
+            // 删除记录
+            records.splice(recordIndex, 1);
+            
+            renderInventoryTable();
+            renderRecordsTable();
+        }
+        
+        // 快速操作（入库/出库）
+        function quickAction(itemId, type) {
+            const quantity = prompt(`请输入${type === 'in' ? '入库' : '出库'}数量:`);
+            if (quantity && !isNaN(quantity) && parseInt(quantity) > 0) {
+                const qty = parseInt(quantity);
+                
+                // 更新库存
+                const itemIndex = inventory.findIndex(i => i.id === itemId);
+                if (itemIndex !== -1) {
+                    if (type === "in") {
+                        inventory[itemIndex].current += qty;
+                    } else {
+                        inventory[itemIndex].current -= qty;
+                        if (inventory[itemIndex].current < 0) {
+                            inventory[itemIndex].current = 0;
+                        }
+                    }
+                }
+                
+                // 添加记录
+                const today = new Date().toISOString().split('T')[0];
+                records.push({
+                    id: records.length > 0 ? Math.max(...records.map(r => r.id)) + 1 : 1,
+                    date: today,
+                    itemId,
+                    type,
+                    quantity: qty,
+                    notes: `快速${type === 'in' ? '入库' : '出库'}`
+                });
+                
+                renderInventoryTable();
+                renderRecordsTable();
+            }
+        }
+        
+        // 初始化页面
+        window.onload = initPage;
+    </script>
+</body>
+</html>
